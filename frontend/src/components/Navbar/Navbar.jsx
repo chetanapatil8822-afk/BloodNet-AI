@@ -11,7 +11,7 @@ function Navbar() {
       <div className="space-x-6 flex text-gray-700 font-medium">
         <Link to="/">Home</Link>
         <Link to="/find-donor">Find Donor</Link>
-        <Link to="/register">Register</Link>
+        <Link to="/register">Register Donar</Link>
         <Link to="/emergency">Emergency</Link>
         <Link to="/ai-chat">AI Chat</Link>
       </div>

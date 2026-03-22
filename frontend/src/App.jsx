@@ -16,6 +16,7 @@ function App() {
       <Route path="/emergency" element={<MainLayout><EmergencyRequest /></MainLayout>} />
       <Route path="/ai-chat" element={<MainLayout><ChatAssistant /></MainLayout>} />
     </Routes>
+
   );
 }
 
