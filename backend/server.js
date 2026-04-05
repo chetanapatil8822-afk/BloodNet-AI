@@ -1,7 +1,10 @@
-import Donor from "./models/Donor.js";
+console.log("🔥 THIS IS SERVER.JS FILE RUNNING");
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
+
+import Donor from "./models/Donor.js";
+import User from "./models/User.js";
 
 const app = express();
 
@@ -13,6 +16,13 @@ app.use(express.json());
 app.get("/", (req, res) => {
   res.send("API running...");
 });
+
+app.get("/check", (req, res) => {
+  res.send("Login route added");
+});
+
+
+// ================= DONOR ROUTES =================
 
 // Get donors
 app.get("/donors", async (req, res) => {
@@ -45,13 +55,13 @@ app.delete("/donors/:id", async (req, res) => {
   }
 });
 
-// Update donor (including mark as donated)
+// Update donor
 app.put("/donors/:id", async (req, res) => {
   try {
     const updatedDonor = await Donor.findByIdAndUpdate(
       req.params.id,
       req.body,
-      { returnDocument: "after" } // ✅ New recommended option
+      { new: true } // ✅ correct option
     );
     res.json(updatedDonor);
   } catch (err) {
@@ -59,16 +69,89 @@ app.put("/donors/:id", async (req, res) => {
   }
 });
 
-// connect DB
+
+// ================= AUTH ROUTES =================
+
+// Signup
+app.post("/signup", async (req, res) => {
+  try {
+    const { name, email, password } = req.body;
+
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      return res.status(400).json({ message: "User already exists" });
+    }
+
+    const user = new User({
+      name,
+      email,
+      password,
+    });
+
+    await user.save();
+
+    res.json({ message: "Signup successful" });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+// Login
+app.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // ❌ check empty
+    if (!email || !password) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // 🔍 find user
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(400).json({ message: "User not found" });
+    }
+
+    // 🔐 check password
+    if (user.password !== password) {
+      return res.status(400).json({ message: "Invalid password" });
+    }
+
+    // ✅ success
+    res.json({
+      message: "Login successful",
+      role: user.role,
+      name: user.name,
+    });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
+// ================= DATABASE =================
+
 mongoose.connect(
-  "mongodb+srv://chetana29:dwIjXakSetqw4vgh@bloodnetcluster.eljadmk.mongodb.net/blood-donation=bloodnet-cluster"
+  "mongodb+srv://chetana29:dwIjXakSetqw4vgh@bloodnetcluster.eljadmk.mongodb.net/bloodnet-cluster"
 );
 
 mongoose.connection.on("connected", () => {
   console.log("MongoDB connected");
 });
 
-// start server
+
+// ================= SERVER =================
+
 app.listen(5000, () => {
   console.log("Server running on port 5000");
 });
