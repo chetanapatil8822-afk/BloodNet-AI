@@ -6,8 +6,8 @@ function DonorCard({ donor }) {
   let statusColor = "";
 
   if (!donor.lastDonationDate) {
-    statusText = "Available";
-    statusColor = "text-green-600";
+    statusText = donor.availability ? "Available" : "Not Available";
+    statusColor = donor.availability ? "text-green-600" : "text-red-500";
   } else {
     const last = new Date(donor.lastDonationDate);
     const diffDays = (today - last) / (1000 * 60 * 60 * 24);
@@ -38,6 +38,13 @@ function DonorCard({ donor }) {
       {/* 🔥 UPDATED STATUS UI */}
       <p className={`mt-2 font-semibold ${statusColor}`}>
         {statusText}
+      </p>
+
+      {/* 🗓️ Last Donation Date */}
+      <p className="text-sm text-gray-500">
+        Last Donation: {donor.lastDonationDate 
+          ? new Date(donor.lastDonationDate).toDateString() 
+          : "Never"}
       </p>
 
       <div className="mt-4 flex gap-3">

@@ -7,6 +7,9 @@ import RegisterDonor from "./pages/RegisterDonor/RegisterDonor";
 import EmergencyRequest from "./pages/EmergencyRequest/EmergencyRequest";
 import ChatAssistant from "./pages/ChatAssistant/ChatAssistant";
 import Admin from "./pages/AdminDashboard/Admin";
+import DonorDashboard from "./pages/DonorDashboard/DonorDashboard";
+import Login from "./pages/Login/Login";
+import Signup from "./pages/Signup/Signup";
 
 function App() {
   return (
@@ -17,8 +20,14 @@ function App() {
       <Route path="/emergency" element={<MainLayout><EmergencyRequest /></MainLayout>} />
       <Route path="/ai-chat" element={<MainLayout><ChatAssistant /></MainLayout>} />
       <Route path="/admin" element={<MainLayout><Admin /></MainLayout>} />
+      <Route 
+  path="/donor-dashboard" 
+  element={<MainLayout><DonorDashboard /></MainLayout>} 
+/>
+      <Route path="/login" element={<MainLayout><Login /></MainLayout>} />
+      <Route path="/signup" element={<MainLayout><Signup /></MainLayout>} />
     </Routes>
-
+      
   );
 }
 

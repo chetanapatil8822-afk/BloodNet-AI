@@ -77,15 +77,28 @@ function Navbar() {
           AI Chat
         </NavLink>
 
+        {/* 🔥 NEW: Donor Dashboard */}
+        <NavLink
+          to="/donor-dashboard"
+          className={({ isActive }) =>
+            `pb-1 transition ${
+              isActive
+                ? "text-primary border-b-2 border-primary"
+                : "hover:text-primary"
+            }`
+          }
+        >
+          Donor Dashboard
+        </NavLink>
+
       </div>
 
       {/* LOGIN BUTTON */}
-      <Link to="/register">
-        <button className="bg-primary text-white px-5 py-2 rounded-lg hover:bg-primaryDark transition">
-          Login
-        </button>
-      </Link>
-
+<Link to="/login">
+  <button className="bg-primary text-white px-5 py-2 rounded-lg hover:bg-primaryDark transition">
+    Login
+  </button>
+</Link>
     </nav>
   );
 }
