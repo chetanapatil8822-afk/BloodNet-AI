@@ -5,7 +5,16 @@ const donorSchema = new mongoose.Schema({
   bloodGroup: String,
   city: String,
   phone: String,
-  availability: Boolean,
+
+  availability: {
+    type: Boolean,
+    default: true
+  },
+
+  lastDonationDate: {
+    type: Date,
+    default: null
+  }
 });
 
 const Donor = mongoose.model("Donor", donorSchema);
