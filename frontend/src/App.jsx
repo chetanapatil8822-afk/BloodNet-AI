@@ -6,6 +6,7 @@ import FindDonor from "./pages/FindDonor/FindDonor";
 import RegisterDonor from "./pages/RegisterDonor/RegisterDonor";
 import EmergencyRequest from "./pages/EmergencyRequest/EmergencyRequest";
 import ChatAssistant from "./pages/ChatAssistant/ChatAssistant";
+import Admin from "./pages/AdminDashboard/Admin";
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
       <Route path="/register" element={<MainLayout><RegisterDonor /></MainLayout>} />
       <Route path="/emergency" element={<MainLayout><EmergencyRequest /></MainLayout>} />
       <Route path="/ai-chat" element={<MainLayout><ChatAssistant /></MainLayout>} />
+      <Route path="/admin" element={<MainLayout><Admin /></MainLayout>} />
     </Routes>
 
   );
