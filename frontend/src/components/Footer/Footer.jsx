@@ -1,36 +1,40 @@
 function Footer() {
   return (
-    <footer className="bg-gray-100 px-10 py-10 mt-10">
-        <div className="grid md:grid-cols-4 gap-8 text-gray-700">
-
-          <div>
-            <h3 className="font-bold text-lg mb-3">BloodNet AI</h3>
-            <p className="text-sm">
-              BloodNet AI connects donors instantly using AI to save lives during emergencies.
-            </p>
-          </div>
-
-          <div>
-            <h3 className="font-bold mb-3">Quick Links</h3>
-            <p>Find Donor</p>
-            <p>Become a Donor</p>
-            <p>Emergency Requests</p>
-          </div>
-
-          <div>
-            <h3 className="font-bold mb-3">Blood Info</h3>
-            <p>Who Can Donate?</p>
-            <p>Donation Guidelines</p>
-          </div>
-
-          
+    <footer className="bg-gray-100 py-12 mt-10">
+      
+      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-3 text-gray-700 text-center md:text-left">
+        
+        {/* Column 1 */}
+        <div className="flex flex-col items-center md:items-start space-y-2">
+          <h3 className="font-semibold text-lg">BloodNet AI</h3>
+          <p className="text-sm max-w-xs">
+            BloodNet AI connects donors instantly using AI to save lives during emergencies.
+          </p>
         </div>
 
-        <div className="text-center mt-8 text-sm text-gray-500">
-          © 2026 BloodNet AI | Save Lives ❤️
+        {/* Column 2 */}
+        <div className="flex flex-col items-center space-y-2">
+          <h3 className="font-semibold text-lg">Quick Links</h3>
+          <p className="hover:text-red-500 cursor-pointer">Find Donor</p>
+          <p className="hover:text-red-500 cursor-pointer">Become a Donor</p>
+          <p className="hover:text-red-500 cursor-pointer">Emergency Requests</p>
         </div>
-      </footer>
 
+        {/* Column 3 */}
+        <div className="flex flex-col items-center md:items-end space-y-2">
+          <h3 className="font-semibold text-lg">Blood Info</h3>
+          <p className="hover:text-red-500 cursor-pointer">Who Can Donate?</p>
+          <p className="hover:text-red-500 cursor-pointer">Donation Guidelines</p>
+        </div>
+
+      </div>
+
+      {/* Bottom Line */}
+      <div className="text-center mt-10 text-sm text-gray-500">
+        © 2026 BloodNet AI | Save Lives ❤️
+      </div>
+
+    </footer>
   );
 }
 

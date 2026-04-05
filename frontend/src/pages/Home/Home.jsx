@@ -1,5 +1,6 @@
 import { FaSearch, FaPhoneAlt, FaTint } from "react-icons/fa";
 import { MdLocationOn } from "react-icons/md";
+import { Link } from "react-router-dom";   // ✅ ADD THIS
 
 function Home() {
   return (
@@ -19,20 +20,28 @@ function Home() {
           </p>
 
           <div className="mt-8 space-x-4">
-            <button className="bg-primary text-white px-6 py-3 rounded-lg text-lg hover:bg-primaryDark shadow-md">
-              Find Donor
-            </button>
 
-            <button className="border border-primary text-primary px-6 py-3 rounded-lg text-lg hover:bg-lightRed">
-              Register as Donor
-            </button>
+            {/* ✅ FIND DONOR BUTTON */}
+            <Link to="/find-donor">
+              <button className="bg-primary text-white px-6 py-3 rounded-lg text-lg hover:bg-primaryDark shadow-md">
+                Find Donor
+              </button>
+            </Link>
+
+            {/* ✅ REGISTER BUTTON */}
+            <Link to="/register">
+              <button className="border border-primary text-primary px-6 py-3 rounded-lg text-lg hover:bg-lightRed">
+                Register as Donor
+              </button>
+            </Link>
+
           </div>
         </div>
 
         {/* RIGHT IMAGE */}
         <div className="mt-10 md:mt-0">
           <img
-            src="/blood-donation.png"   // 👈 put image in public folder
+            src="/blood-donation.png"
             alt="Blood Donation"
             className="w-[400px]"
           />
@@ -112,15 +121,49 @@ function Home() {
 
           {/* RIGHT MAP IMAGE */}
           <img
-            src="/map.png"   // 👈 add map image
+            src="/map.png"
             alt="map"
             className="w-[250px] mt-6 md:mt-0 rounded-lg"
           />
         </div>
       </section>
 
+      {/* ================= WHY DONATE BLOOD ================= */}
+<section className="px-10 py-20 bg-white flex justify-center">
 
+  <div className="flex flex-col md:flex-row items-center gap-10 max-w-5xl">
+    
+    {/* LEFT IMAGE */}
+    <div>
+      <img
+        src="https://user-gen-media-assets.s3.amazonaws.com/gemini_images/1030715c-36e1-40f9-a9b9-0b4a676ba03e.png"
+        alt="Hands holding blood drop"
+        className="w-[350px] md:w-[420px]"
+      />
+    </div>
 
+    {/* RIGHT TEXT */}
+    <div className="max-w-xl">
+      <h2 className="text-4xl font-bold text-gray-800 mb-6">
+        Why Should You Donate Blood?
+      </h2>
+
+      <p className="text-gray-600 text-lg leading-relaxed mb-4">
+        Blood donation is a simple act that can save multiple lives. Every unit of blood donated can help patients undergoing surgeries, trauma care, cancer treatment, and chronic illnesses.
+      </p>
+
+      <p className="text-gray-600 text-lg leading-relaxed mb-4">
+        Donating blood not only helps others but also benefits your own health. It helps in maintaining healthy iron levels, improves blood circulation, and promotes the production of new blood cells.
+      </p>
+
+      <p className="text-gray-600 text-lg leading-relaxed">
+        In emergencies, timely availability of blood can mean the difference between life and death. By donating blood, you become a vital part of a life-saving network and contribute to a healthier and stronger community.
+      </p>
+    </div>
+
+  </div>
+
+</section>
     </div>
   );
 }
