@@ -11,7 +11,7 @@ function FindDonor() {
     const fetchDonors = async () => {
       try {
         const res = await axios.get("http://localhost:5000/donors");
-        setDonors(res.data); // API se aaya hua data set karo
+        setDonors(res.data);
       } catch (err) {
         console.error("Error fetching donors:", err);
       }
@@ -20,13 +20,28 @@ function FindDonor() {
     fetchDonors();
   }, []);
 
-  // Filter donors based on blood group and city
-  const filteredDonors = donors.filter((d) => {
-    return (
-      d.bloodGroup?.toLowerCase().includes(search.toLowerCase()) &&
-      d.city?.toLowerCase().includes(city.toLowerCase())
-    );
-  });
+  // 🔥 UPDATED FILTER (with 90-day + availability logic)
+const filteredDonors = donors.filter((d) => {
+  const today = new Date();
+
+  // 🔍 Search filters
+  const matchesSearch = d.bloodGroup?.toLowerCase().includes(search.toLowerCase());
+  const matchesCity = d.city?.toLowerCase().includes(city.toLowerCase());
+
+  // ❌ If donor manually marked unavailable → hide
+  if (!d.availability) return false;
+
+  // 🧠 Auto eligibility logic for lastDonationDate
+  if (!d.lastDonationDate) {
+    return matchesSearch && matchesCity;
+  }
+
+  const last = new Date(d.lastDonationDate);
+  const diffDays = (today - last) / (1000 * 60 * 60 * 24);
+
+  // ✅ Only show if 90+ days since last donation
+  return matchesSearch && matchesCity && diffDays > 90;
+});
 
   return (
     <div className="p-8">
