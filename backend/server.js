@@ -37,9 +37,31 @@ app.get("/donors", async (req, res) => {
 // Add donor
 app.post("/donors", async (req, res) => {
   try {
-    const donor = new Donor(req.body);
+    let { name, phone, bloodGroup, city } = req.body;
+
+    // ✅ 1. Basic validation
+    if (!name || !phone || !bloodGroup || !city) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // ✅ 2. Clean phone (remove spaces, +, - etc.)
+    const cleanPhone = phone.replace(/\D/g, "");
+
+    // ✅ 3. Validate phone length
+    if (cleanPhone.length !== 10) {
+      return res.status(400).json({ message: "Invalid phone number" });
+    }
+
+    // ✅ 4. Save cleaned phone
+    const donor = new Donor({
+      ...req.body,
+      phone: cleanPhone,
+    });
+
     await donor.save();
+
     res.json(donor);
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

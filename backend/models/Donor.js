@@ -5,6 +5,8 @@ const donorSchema = new mongoose.Schema({
   bloodGroup: String,
   city: String,
   phone: String,
+  state: String,
+  district: String,
 
   availability: {
     type: Boolean,
