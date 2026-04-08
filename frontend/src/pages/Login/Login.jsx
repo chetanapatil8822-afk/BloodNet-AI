@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -10,20 +11,36 @@ function Login() {
 
   const navigate = useNavigate();
 
+  useEffect(() => {
+  const role = localStorage.getItem("role");
+
+  if (role === "admin") {
+    navigate("/admin");
+  } else if (role) {
+    navigate("/donor-dashboard");
+  }
+}, []);
+
   const handleLogin = async () => {
-    try {
-      const res = await axios.post("http://localhost:5000/login", data);
+  try {
+    const res = await axios.post("http://localhost:5000/login", data);
 
-      localStorage.setItem("role", res.data.role);
-      localStorage.setItem("name", res.data.name);
+    // ✅ Save user data
+    localStorage.setItem("token", res.data.token);
+    localStorage.setItem("role", res.data.role);
+    localStorage.setItem("name", res.data.name);
 
-      alert("Login successful");
-
-      navigate("/");
-    } catch (err) {
-      alert(err.response?.data?.message || "Login failed");
+    // 🎯 Role-based redirect
+    if (res.data.role === "admin") {
+      navigate("/admin");
+    } else {
+      navigate("/donor-dashboard");
     }
-  };
+
+  } catch (err) {
+    alert("Login failed");
+  }
+};
 
   return (
     <div style={styles.container}>

@@ -12,14 +12,24 @@ function Signup() {
   const navigate = useNavigate();
 
   const handleSignup = async () => {
+    // ✅ empty field validation
+    if (!data.name || !data.email || !data.password) {
+      alert("All fields are required");
+      return;
+    }
+
     try {
-      await axios.post("http://localhost:5000/register", data);
+      const res = await axios.post("http://localhost:5000/signup", data);
 
-      alert("Signup successful");
+      console.log(res.data);
 
-      // 👉 signup ke baad login page pe bhejo
+      alert("Signup successful 🎉");
+
+      // 👉 redirect to login
       navigate("/login");
+
     } catch (err) {
+      console.log(err.response);
       alert(err.response?.data?.message || "Signup failed");
     }
   };
@@ -32,6 +42,7 @@ function Signup() {
         <input
           style={styles.input}
           placeholder="Enter Name"
+          value={data.name}
           onChange={(e) => setData({ ...data, name: e.target.value })}
         />
 
@@ -39,6 +50,7 @@ function Signup() {
           style={styles.input}
           type="email"
           placeholder="Enter Email"
+          value={data.email}
           onChange={(e) => setData({ ...data, email: e.target.value })}
         />
 
@@ -46,6 +58,7 @@ function Signup() {
           style={styles.input}
           type="password"
           placeholder="Enter Password"
+          value={data.password}
           onChange={(e) => setData({ ...data, password: e.target.value })}
         />
 
