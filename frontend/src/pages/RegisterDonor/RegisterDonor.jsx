@@ -5,9 +5,23 @@ import { useNavigate } from "react-router-dom";
 function RegisterDonor() {
   const navigate = useNavigate();
 
+  // ✅ All Indian States
+  const statesOfIndia = [
+    "Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh",
+    "Goa","Gujarat","Haryana","Himachal Pradesh","Jharkhand",
+    "Karnataka","Kerala","Madhya Pradesh","Maharashtra","Manipur",
+    "Meghalaya","Mizoram","Nagaland","Odisha","Punjab",
+    "Rajasthan","Sikkim","Tamil Nadu","Telangana","Tripura",
+    "Uttar Pradesh","Uttarakhand","West Bengal",
+    "Andaman and Nicobar Islands","Chandigarh","Dadra and Nagar Haveli and Daman and Diu",
+    "Delhi","Jammu and Kashmir","Ladakh","Lakshadweep","Puducherry"
+  ];
+
   const [formData, setFormData] = useState({
     name: "",
     bloodGroup: "",
+    state: "",
+    district: "",
     city: "",
     phone: "",
     availability: true,
@@ -26,16 +40,17 @@ function RegisterDonor() {
     e.preventDefault();
 
     try {
-      await addDonor(formData);  // ✅ save to backend
+      await addDonor(formData);
 
       alert("Donor Registered Successfully ✅");
 
-      navigate("/find-donor");  // ✅ redirect added here
+      navigate("/find-donor");
 
-      // reset form (optional since redirect ho raha hai)
       setFormData({
         name: "",
         bloodGroup: "",
+        state: "",
+        district: "",
         city: "",
         phone: "",
         availability: true,
@@ -75,6 +90,33 @@ function RegisterDonor() {
           name="bloodGroup"
           placeholder="Blood Group (e.g. O+)"
           value={formData.bloodGroup}
+          onChange={handleChange}
+          className="w-full border p-3 mb-4 rounded-lg"
+          required
+        />
+
+        {/* ✅ State Dropdown */}
+        <select
+          name="state"
+          value={formData.state}
+          onChange={handleChange}
+          className="w-full border p-3 mb-4 rounded-lg"
+          required
+        >
+          <option value="">Select State</option>
+          {statesOfIndia.map((state) => (
+            <option key={state} value={state}>
+              {state}
+            </option>
+          ))}
+        </select>
+
+        {/* ✅ District Input (no dropdown) */}
+        <input
+          type="text"
+          name="district"
+          placeholder="District"
+          value={formData.district}
           onChange={handleChange}
           className="w-full border p-3 mb-4 rounded-lg"
           required

@@ -1,12 +1,31 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import DonorCard from "../../components/DonorCard/DonorCard";
+import { useLocation } from "react-router-dom"; // ✅ ADDED
 
 function FindDonor() {
   const [donors, setDonors] = useState([]);
   const [search, setSearch] = useState("");
   const [city, setCity] = useState("");
+  const [state, setState] = useState("");
+  const [district, setDistrict] = useState("");
 
+  const location = useLocation(); // ✅ ADDED
+  const emergencyData = location.state; // ✅ ADDED
+
+  // ✅ Same states list
+  const statesOfIndia = [
+    "Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh",
+    "Goa","Gujarat","Haryana","Himachal Pradesh","Jharkhand",
+    "Karnataka","Kerala","Madhya Pradesh","Maharashtra","Manipur",
+    "Meghalaya","Mizoram","Nagaland","Odisha","Punjab",
+    "Rajasthan","Sikkim","Tamil Nadu","Telangana","Tripura",
+    "Uttar Pradesh","Uttarakhand","West Bengal",
+    "Andaman and Nicobar Islands","Chandigarh","Dadra and Nagar Haveli and Daman and Diu",
+    "Delhi","Jammu and Kashmir","Ladakh","Lakshadweep","Puducherry"
+  ];
+
+  // ✅ Fetch donors
   useEffect(() => {
     const fetchDonors = async () => {
       try {
@@ -20,28 +39,51 @@ function FindDonor() {
     fetchDonors();
   }, []);
 
-  // 🔥 UPDATED FILTER (with 90-day + availability logic)
-const filteredDonors = donors.filter((d) => {
-  const today = new Date();
+  // 🔥 NEW: Apply Emergency Filters (SAFE)
+  useEffect(() => {
+    if (emergencyData) {
+      if (emergencyData.bloodGroup) {
+        setSearch(emergencyData.bloodGroup);
+      }
+      if (emergencyData.city) {
+        setCity(emergencyData.city);
+      }
+    }
+  }, [emergencyData]);
 
-  // 🔍 Search filters
-  const matchesSearch = d.bloodGroup?.toLowerCase().includes(search.toLowerCase());
-  const matchesCity = d.city?.toLowerCase().includes(city.toLowerCase());
+  // 🔥 FILTER LOGIC (UNCHANGED)
+  const filteredDonors = donors.filter((d) => {
+    const today = new Date();
 
-  // ❌ If donor manually marked unavailable → hide
-  if (!d.availability) return false;
+    const matchesSearch = search ? d.bloodGroup === search : true;
+    const matchesCity = d.city?.toLowerCase().includes(city.toLowerCase());
+    const matchesState = state ? d.state?.toLowerCase() === state.toLowerCase() : true;
+    const matchesDistrict = district
+      ? d.district?.toLowerCase().includes(district.toLowerCase())
+      : true;
 
-  // 🧠 Auto eligibility logic for lastDonationDate
-  if (!d.lastDonationDate) {
-    return matchesSearch && matchesCity;
-  }
+    if (!d.availability) return false;
 
-  const last = new Date(d.lastDonationDate);
-  const diffDays = (today - last) / (1000 * 60 * 60 * 24);
+    if (!d.lastDonationDate || d.lastDonationDate === "") {
+      return matchesSearch && matchesCity && matchesState && matchesDistrict;
+    }
 
-  // ✅ Only show if 90+ days since last donation
-  return matchesSearch && matchesCity && diffDays > 90;
-});
+    const last = new Date(d.lastDonationDate);
+
+    if (isNaN(last)) {
+      return matchesSearch && matchesCity && matchesState && matchesDistrict;
+    }
+
+    const diffDays = (new Date() - last) / (1000 * 60 * 60 * 24);
+
+    return (
+      matchesSearch &&
+      matchesCity &&
+      matchesState &&
+      matchesDistrict &&
+      diffDays > 90
+    );
+  });
 
   return (
     <div className="p-8">
@@ -49,18 +91,32 @@ const filteredDonors = donors.filter((d) => {
         Find Blood Donors
       </h1>
 
-      {/* Search Section */}
-      <div className="flex flex-col md:flex-row gap-4 mb-8 justify-center">
-        <input
-          type="text"
-          placeholder="Search Blood Group (e.g. O+)"
-          className="border p-3 rounded-lg w-full md:w-1/3"
+      {/* 🔍 Search Section */}
+      <div className="flex flex-col md:flex-row gap-4 mb-8 justify-center flex-wrap">
+
+        {/* Blood Group */}
+        <select
+          className="border p-3 rounded-lg w-full md:w-1/4"
+          value={search} // ✅ UPDATED (important for auto-fill)
           onChange={(e) => setSearch(e.target.value)}
-        />
+        >
+          <option value="">Select Blood Group</option>
+          <option value="A+">A+</option>
+          <option value="A-">A-</option>
+          <option value="B+">B+</option>
+          <option value="B-">B-</option>
+          <option value="AB+">AB+</option>
+          <option value="AB-">AB-</option>
+          <option value="O+">O+</option>
+          <option value="O-">O-</option>
+        </select>
+
+        {/* City */}
         <input
           type="text"
           placeholder="Enter City"
-          className="border p-3 rounded-lg w-full md:w-1/3"
+          className="border p-3 rounded-lg w-full md:w-1/4"
+          value={city} // ✅ UPDATED (important for auto-fill)
           onChange={(e) => setCity(e.target.value)}
         />
       </div>
