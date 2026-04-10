@@ -3,6 +3,7 @@ import axios from "axios";
 import DonorCard from "../../components/DonorCard/DonorCard";
 import { useLocation } from "react-router-dom"; // ✅ ADDED
 
+
 function FindDonor() {
   const [donors, setDonors] = useState([]);
   const [search, setSearch] = useState("");
@@ -11,7 +12,7 @@ function FindDonor() {
   const [district, setDistrict] = useState("");
 
   const location = useLocation(); // ✅ ADDED
-  const emergencyData = location.state; // ✅ ADDED
+  const emergencyData = location.state || null; // ✅ FIXED (SAFE HANDLING)
 
   // ✅ Same states list
   const statesOfIndia = [
@@ -25,21 +26,35 @@ function FindDonor() {
     "Delhi","Jammu and Kashmir","Ladakh","Lakshadweep","Puducherry"
   ];
 
-  // ✅ Fetch donors
+  // 🔥 UPDATED: Fetch donors (Emergency + Normal mode)
   useEffect(() => {
-    const fetchDonors = async () => {
-      try {
-        const res = await axios.get("http://localhost:5000/donors");
-        setDonors(res.data);
-      } catch (err) {
-        console.error("Error fetching donors:", err);
+  const fetchDonors = async () => {
+    try {
+      let res;
+
+      if (emergencyData?.bloodGroup && emergencyData?.city) {
+        // 🧠 ML MODE
+        res = await axios.post(
+          "http://localhost:5000/match-donors",
+          emergencyData
+        );
+      } else {
+        // 🧠 NORMAL MODE
+        res = await axios.get("http://localhost:5000/donors");
       }
-    };
 
-    fetchDonors();
-  }, []);
+      console.log("API RESPONSE:", res.data); // 🔥 DEBUG
+      setDonors(res.data);
 
-  // 🔥 NEW: Apply Emergency Filters (SAFE)
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  fetchDonors();
+}, [emergencyData]);
+
+  // 🔥 Auto-fill emergency filters (UNCHANGED LOGIC)
   useEffect(() => {
     if (emergencyData) {
       if (emergencyData.bloodGroup) {
@@ -52,39 +67,7 @@ function FindDonor() {
   }, [emergencyData]);
 
   // 🔥 FILTER LOGIC (UNCHANGED)
-  const filteredDonors = donors.filter((d) => {
-    const today = new Date();
-
-    const matchesSearch = search ? d.bloodGroup === search : true;
-    const matchesCity = d.city?.toLowerCase().includes(city.toLowerCase());
-    const matchesState = state ? d.state?.toLowerCase() === state.toLowerCase() : true;
-    const matchesDistrict = district
-      ? d.district?.toLowerCase().includes(district.toLowerCase())
-      : true;
-
-    if (!d.availability) return false;
-
-    if (!d.lastDonationDate || d.lastDonationDate === "") {
-      return matchesSearch && matchesCity && matchesState && matchesDistrict;
-    }
-
-    const last = new Date(d.lastDonationDate);
-
-    if (isNaN(last)) {
-      return matchesSearch && matchesCity && matchesState && matchesDistrict;
-    }
-
-    const diffDays = (new Date() - last) / (1000 * 60 * 60 * 24);
-
-    return (
-      matchesSearch &&
-      matchesCity &&
-      matchesState &&
-      matchesDistrict &&
-      diffDays > 90
-    );
-  });
-
+  const filteredDonors = donors;
   return (
     <div className="p-8">
       <h1 className="text-3xl font-bold mb-6 text-center">
@@ -97,7 +80,7 @@ function FindDonor() {
         {/* Blood Group */}
         <select
           className="border p-3 rounded-lg w-full md:w-1/4"
-          value={search} // ✅ UPDATED (important for auto-fill)
+          value={search}
           onChange={(e) => setSearch(e.target.value)}
         >
           <option value="">Select Blood Group</option>
@@ -116,7 +99,7 @@ function FindDonor() {
           type="text"
           placeholder="Enter City"
           className="border p-3 rounded-lg w-full md:w-1/4"
-          value={city} // ✅ UPDATED (important for auto-fill)
+          value={city}
           onChange={(e) => setCity(e.target.value)}
         />
       </div>

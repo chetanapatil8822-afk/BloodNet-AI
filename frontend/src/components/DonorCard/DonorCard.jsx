@@ -45,6 +45,12 @@ function DonorCard({ donor }) {
         Response Rate: <span className="font-semibold">{donor.responseRate}</span>
       </p>
 
+     {donor.score !== undefined && (
+  <p className="text-blue-600 font-bold">
+    AI Score: {donor.score}/100
+  </p>
+)}
+
       {/* 🔥 STATUS */}
       <p className={`mt-2 font-semibold ${statusColor}`}>
         {statusText}
