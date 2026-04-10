@@ -160,6 +160,63 @@ app.post("/login", async (req, res) => {
   }
 });
 
+// ================= ML MATCHING ROUTE =================
+
+app.post("/match-donors", async (req, res) => {
+  try {
+    const { bloodGroup, city, district } = req.body;
+
+    // STEP 1: Get all donors
+    const donors = await Donor.find();
+
+    // STEP 2: Filter by blood group
+    const filteredByBlood = donors.filter(
+      d => d.bloodGroup === bloodGroup
+    );
+
+    // STEP 3: Score by location
+    const ranked = filteredByBlood.map(d => {
+  let score = 0;
+
+  // 🩸 Blood group (50)
+  if (d.bloodGroup === bloodGroup) {
+    score += 50;
+  }
+
+  // 📍 City (30)
+  if (city && d.city?.toLowerCase() === city.toLowerCase()) {
+    score += 30;
+  }
+
+  // 🏠 District (10)
+  if (district && d.district?.toLowerCase() === district.toLowerCase()) {
+    score += 10;
+  }
+
+  // ⚡ Availability (10)
+  if (d.availability) {
+    score += 10;
+  }
+
+  return {
+    ...d._doc,
+    score // ALWAYS between 0–100
+  };
+});
+
+    // STEP 4: Sort
+    const sorted = ranked.sort((a, b) => b.score - a.score);
+
+    // STEP 5: Return
+    res.json(sorted);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+
 
 // ================= DATABASE =================
 
