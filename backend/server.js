@@ -5,6 +5,18 @@ import cors from "cors";
 
 import Donor from "./models/Donor.js";
 import User from "./models/User.js";
+import chatRoutes from "./routes/chat.js";
+
+import dotenv from "dotenv";
+dotenv.config();
+
+console.log("API KEY:", process.env.OPENROUTER_API_KEY);
+
+import { OpenRouter } from "@openrouter/sdk";
+
+const openrouter = new OpenRouter({
+  apiKey: process.env.OPENROUTER_API_KEY
+});
 
 const app = express();
 
@@ -21,7 +33,7 @@ app.get("/check", (req, res) => {
   res.send("Login route added");
 });
 
-
+app.use("/api", chatRoutes);
 // ================= DONOR ROUTES =================
 
 // Get donors
@@ -216,6 +228,87 @@ app.post("/match-donors", async (req, res) => {
   }
 });
 
+app.get("/test-ai", async (req, res) => {
+  try {
+    const stream = await openrouter.chat.send({
+      chatRequest: {   // ✅ IMPORTANT FIX
+        model: "meta-llama/llama-3.3-70b-instruct",
+        messages: [
+          {
+            role: "user",
+            content: "Explain blood donation in simple words"
+          }
+        ],
+        stream: true
+      }
+    });
+
+    let fullResponse = "";
+
+    for await (const chunk of stream) {
+      const content = chunk.choices[0]?.delta?.content;
+      if (content) {
+        fullResponse += content;
+      }
+    }
+
+    res.json({ reply: fullResponse });
+
+  } catch (error) {
+    console.error("FULL ERROR:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
+
+app.post("/chat", async (req, res) => {
+  try {
+    const { message } = req.body;
+
+    const stream = await openrouter.chat.send({
+  chatRequest: {
+    model: "meta-llama/llama-3.3-70b-instruct",
+    messages: [
+      {
+        role: "system",
+        content: `
+You are an AI assistant for a blood donation app.
+
+Your job:
+- Help users find blood
+- Answer donation questions
+- Detect emergency requests
+- Suggest compatible blood groups
+- Generate short emergency messages
+
+Keep answers:
+- Short
+- Clear
+- Helpful
+`
+      },
+      {
+        role: "user",
+        content: message
+      }
+    ],
+    stream: true
+  }
+});
+
+    let fullResponse = "";
+
+    for await (const chunk of stream) {
+      const content = chunk.choices[0]?.delta?.content;
+      if (content) fullResponse += content;
+    }
+
+    res.json({ reply: fullResponse });
+
+  } catch (error) {
+    console.error("CHAT ERROR:", error);
+    res.status(500).json({ error: error.message });
+  }
+});
 
 
 // ================= DATABASE =================
