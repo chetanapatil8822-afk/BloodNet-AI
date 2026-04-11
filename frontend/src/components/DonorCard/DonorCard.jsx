@@ -39,11 +39,6 @@ function DonorCard({ donor }) {
           .join(", ")}
       </p>
 
-      <p className="text-gray-600">Distance: {donor.distance}</p>
-
-      <p className="mt-2 text-sm">
-        Response Rate: <span className="font-semibold">{donor.responseRate}</span>
-      </p>
 
      {donor.score !== undefined && (
   <p className="text-blue-600 font-bold">
