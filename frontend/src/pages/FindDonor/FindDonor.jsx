@@ -32,6 +32,20 @@ function FindDonor() {
     fetchDonors();
   }, [emergencyData]);
 
+  const isEligible = (donor) => {
+    if (!donor.lastDonationDate) return donor.availability;
+
+    const last = new Date(donor.lastDonationDate);
+    const today = new Date();
+
+    const diffDays = (today - last) / (1000 * 60 * 60 * 24);
+
+    return diffDays >= 90 && donor.availability;
+  };
+
+  // ✅ SINGLE SOURCE OF TRUTH
+  const eligibleDonors = donors.filter(isEligible);
+
   return (
     <div className="min-h-screen bg-[#FDFDFD] font-sans pb-20">
       
@@ -66,12 +80,14 @@ function FindDonor() {
             {/* Quick Stats */}
             <div className="flex gap-6 border-l-0 md:border-l border-gray-100 md:pl-8">
               <div>
-                <p className="text-2xl font-bold text-gray-900">{donors.length}</p>
+                {/* ✅ FIXED */}
+                <p className="text-2xl font-bold text-gray-900">{eligibleDonors.length}</p>
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-tighter">Results</p>
               </div>
               <div>
+                {/* ✅ FIXED */}
                 <p className="text-2xl font-bold text-emerald-500">
-                  {donors.filter(d => d.availability).length}
+                  {eligibleDonors.length}
                 </p>
                 <p className="text-xs font-bold text-gray-400 uppercase tracking-tighter">Available</p>
               </div>
@@ -91,9 +107,10 @@ function FindDonor() {
           </div>
         ) : (
           <>
-            {donors.length > 0 ? (
+            {eligibleDonors.length > 0 ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-                {donors.map((donor) => (
+                {/* ✅ FIXED */}
+                {eligibleDonors.map((donor) => (
                   <div key={donor._id} className="transform transition-all hover:-translate-y-1">
                     <DonorCard donor={donor} />
                   </div>

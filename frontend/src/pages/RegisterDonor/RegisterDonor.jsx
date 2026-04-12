@@ -58,7 +58,7 @@ function RegisterDonor() {
           
           {/* Header */}
           <div className="mb-15 text-center">
-            <h2 className="text-3xl font-bold text-gray-900">
+            <h2 className="text-4xl font-bold text-gray-900">
               Become a <span className="text-red-600">Hero</span>
             </h2>
             <p className="text-gray-400 text-sm mt-2 font-medium">
