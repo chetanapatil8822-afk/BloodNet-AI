@@ -18,7 +18,7 @@ function Signup() {
     }
 
     try {
-      const res = await axios.post("http://localhost:5000/signup", data);
+      const res = await axios.post("https://bloodnet-ai.onrender.com/signup", data);
       alert("Signup successful 🎉");
       navigate("/login");
     } catch (err) {

@@ -17,10 +17,10 @@ function FindDonor() {
         let res;
         if (emergencyData?.bloodGroup && emergencyData?.city) {
           // AI/ML MATCHING MODE
-          res = await axios.post("http://localhost:5000/match-donors", emergencyData);
+          res = await axios.post("https://bloodnet-ai.onrender.com/match-donors", emergencyData);
         } else {
           // NORMAL MODE
-          res = await axios.get("http://localhost:5000/donors");
+          res = await axios.get("https://bloodnet-ai.onrender.com/donors");
         }
         setDonors(res.data);
       } catch (err) {

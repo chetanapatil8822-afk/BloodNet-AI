@@ -7,7 +7,7 @@ function DonorDashboard() {
 
   const fetchDonors = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/donors");
+      const res = await axios.get("https://bloodnet-ai.onrender.com/donors");
       setDonors(res.data);
     } catch (err) {
       console.error("Error fetching donors:", err);
@@ -20,7 +20,7 @@ function DonorDashboard() {
 
   const toggleAvailability = async (donor) => {
     try {
-      await axios.put(`http://localhost:5000/donors/${donor._id}`, {
+      await axios.put(`https://bloodnet-ai.onrender.com/donors/${donor._id}`, {
         availability: !donor.availability,
       });
       fetchDonors();
@@ -31,7 +31,7 @@ function DonorDashboard() {
 
   const markAsDonated = async (id) => {
     try {
-      await axios.put(`http://localhost:5000/donors/${id}`, {
+      await axios.put(`https://bloodnet-ai.onrender.com/donors/${id}`, {
         availability: false,
         lastDonationDate: new Date(),
       });
