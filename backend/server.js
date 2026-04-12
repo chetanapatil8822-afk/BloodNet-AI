@@ -59,6 +59,113 @@ function extractCity(text) {
   return null;
 }
 
+// 👇 👇 YAHI ADD KARO (exact yaha)
+
+const predefinedQA = [
+
+  // 🩸 BASIC QUESTIONS
+  {
+    keywords: ["what is blood donation"],
+    answer: "Blood donation is when a person gives blood to help patients during surgery, accidents, or illness."
+  },
+  {
+    keywords: ["who can donate blood", "eligibility"],
+    answer: "Healthy adults (18–65 years), with normal hemoglobin and weight above 50kg can donate blood."
+  },
+  {
+    keywords: ["is blood donation safe"],
+    answer: "Yes, blood donation is completely safe. New sterile needles are used every time."
+  },
+  {
+    keywords: ["how often can I donate blood", "gap between donation"],
+    answer: "You can donate whole blood every 3 months (90 days)."
+  },
+  {
+    keywords: ["how much blood is taken"],
+    answer: "Around 350–450 ml of blood is collected during one donation."
+  },
+  {
+    keywords: ["time taken for blood donation"],
+    answer: "The process takes about 10–15 minutes, while total visit may take 30 minutes."
+  },
+
+  // ⚠️ SAFETY / MYTHS
+  {
+    keywords: ["does blood donation hurt"],
+    answer: "You may feel a small pinch, but it is generally painless."
+  },
+  {
+    keywords: ["weak after blood donation"],
+    answer: "Most people feel normal. Rest and hydration help avoid weakness."
+  },
+  {
+    keywords: ["can i donate blood during periods"],
+    answer: "Yes, if you feel healthy and hemoglobin level is normal."
+  },
+
+  // 🧬 BLOOD COMPATIBILITY (VERY IMPORTANT)
+
+  {
+    keywords: ["who can donate to a+"],
+    answer: "A+ can receive blood from A+, A-, O+, and O-."
+  },
+  {
+    keywords: ["who can donate to a-"],
+    answer: "A- can receive blood from A- and O- only."
+  },
+  {
+    keywords: ["who can donate to b+"],
+    answer: "B+ can receive blood from B+, B-, O+, and O-."
+  },
+  {
+    keywords: ["who can donate to b-"],
+    answer: "B- can receive blood from B- and O- only."
+  },
+  {
+    keywords: ["who can donate to ab+"],
+    answer: "AB+ is universal receiver and can receive blood from all groups."
+  },
+  {
+    keywords: ["who can donate to ab-"],
+    answer: "AB- can receive blood from AB-, A-, B-, and O-."
+  },
+  {
+    keywords: ["who can donate to o+"],
+    answer: "O+ can receive blood from O+ and O-."
+  },
+  {
+    keywords: ["who can donate to o-"],
+    answer: "O- can receive blood from O- only."
+  },
+
+  // 🧪 EXTRA KNOWLEDGE
+  {
+    keywords: ["universal donor"],
+    answer: "O- is called universal donor because it can donate to all blood groups."
+  },
+  {
+    keywords: ["universal receiver"],
+    answer: "AB+ is universal receiver because it can receive blood from all groups."
+  },
+  {
+    keywords: ["why blood donation is important"],
+    answer: "Blood donation saves lives in emergencies, surgeries, and treatments like cancer."
+  }
+
+];
+
+function getPredefinedAnswer(message) {
+  const msg = message.toLowerCase();
+
+  for (let item of predefinedQA) {
+    if (item.keywords.some(k => msg.includes(k))) {
+      return item.answer;
+    }
+  }
+
+  return null;
+}
+
 // test route
 app.get("/", (req, res) => {
   res.send("API running...");
@@ -295,51 +402,88 @@ app.get("/test-ai", async (req, res) => {
   }
 });
 
+// 🟢 STEP 1 — ADD THIS ABOVE /chat ROUTE
+function isEmergencyRequest(text) {
+  const t = text.toLowerCase();
+
+  const keywords = [
+    "need",
+    "urgent",
+    "required",
+    "blood",
+    "donor",
+    "help",
+    "emergency"
+  ];
+
+  return keywords.some(word => t.includes(word));
+}
+
+
+// 🚀 YOUR EXISTING ROUTE (UPDATED SAFELY)
 app.post("/chat", async (req, res) => {
   try {
     const { message } = req.body;
 
+    const predefined = getPredefinedAnswer(message);
+
+if (predefined) {
+  return res.json({
+    reply: predefined,
+    donors: []
+  });
+}
+
     console.log("CHAT API HIT");
-    console.log("MESSAGE:", message); // ✅ correct place
+    console.log("MESSAGE:", message);
 
     const bloodGroup = extractBloodGroup(message);
-const city = extractCity(message);
+    const city = extractCity(message);
 
-console.log("EXTRACTED BLOODGROUP:", bloodGroup);
-console.log("EXTRACTED CITY:", city);
+    console.log("EXTRACTED BLOODGROUP:", bloodGroup);
+    console.log("EXTRACTED CITY:", city);
 
-let query = {};
+    // 🟢 NEW: emergency check
+    const isEmergency = isEmergencyRequest(message);
+    console.log("IS EMERGENCY:", isEmergency);
 
-if (bloodGroup) {
-  query.bloodGroup = bloodGroup;
-}
+    let query = {};
 
-if (city) {
-  query.city = new RegExp(`^${city}$`, "i");
-}
+    if (bloodGroup) {
+      query.bloodGroup = bloodGroup;
+    }
 
-console.log("FINAL QUERY:", query);
+    if (city) {
+      query.city = new RegExp(`^${city}$`, "i");
+    }
 
-let donors = await Donor.find(query).limit(5);
+    console.log("FINAL QUERY:", query);
 
+    let donors = [];
 
-console.log("MESSAGE:", message);
-console.log("EXTRACTED BLOODGROUP:", bloodGroup);
-console.log("EXTRACTED CITY:", city);
-console.log("DONORS FROM DB:", donors);
+    // 🟢 IMPORTANT CHANGE: only fetch donors if emergency
+    if (isEmergency && (bloodGroup || city)) {
+      donors = await Donor.find(query).limit(5);
+    }
+
+    console.log("DONORS FROM DB:", donors);
+
     // 🤖 AI response
     const donorCount = donors.length;
 
-const stream = await openrouter.chat.send({
-  chatRequest: {
-    model: "meta-llama/llama-3.3-70b-instruct",
-    messages: [
-      {
-        role: "system",
-        content: `
+    const stream = await openrouter.chat.send({
+      chatRequest: {
+        model: "meta-llama/llama-3.3-70b-instruct",
+        messages: [
+          {
+            role: "system",
+            content: `
 You are an AI assistant for a blood donation app.
 
 IMPORTANT:
+- If user is asking general question → DO NOT mention donors
+- Only show donors when user clearly requests blood
+
 - Only use the data provided
 - Do NOT make up numbers
 
@@ -351,15 +495,15 @@ Rules:
 - If donors > 0 → mention exact number
 - Keep answer short and urgent
 `
-      },
-      {
-        role: "user",
-        content: message
+          },
+          {
+            role: "user",
+            content: message
+          }
+        ],
+        stream: true
       }
-    ],
-    stream: true
-  }
-});
+    });
 
     let aiReply = "";
 
@@ -383,7 +527,7 @@ Rules:
 
     res.json({
       reply: aiReply,
-      donors: donors,   // 👈 IMPORTANT
+      donors: donors,   // ✅ unchanged response structure
       whatsappMessage: whatsappMessage
     });
 
