@@ -7,7 +7,6 @@ function Admin() {
   const [bloodGroup, setBloodGroup] = useState("");
   const [city, setCity] = useState("");
 
-  // Fetch donors
   const fetchDonors = async () => {
     try {
       const res = await axios.get("http://localhost:5000/donors");
@@ -21,17 +20,17 @@ function Admin() {
     fetchDonors();
   }, []);
 
-  // Delete donor
   const deleteDonor = async (id) => {
-    try {
-      await axios.delete(`http://localhost:5000/donors/${id}`);
-      fetchDonors();
-    } catch (err) {
-      console.error("Error deleting donor:", err);
+    if (window.confirm("Are you sure you want to remove this donor?")) {
+      try {
+        await axios.delete(`http://localhost:5000/donors/${id}`);
+        fetchDonors();
+      } catch (err) {
+        console.error("Error deleting donor:", err);
+      }
     }
   };
 
-  // Toggle availability
   const toggleAvailability = async (donor) => {
     try {
       await axios.put(`http://localhost:5000/donors/${donor._id}`, {
@@ -43,7 +42,6 @@ function Admin() {
     }
   };
 
-  // Mark as Donated
   const markAsDonated = async (id) => {
     try {
       await axios.put(`http://localhost:5000/donors/${id}`, {
@@ -56,7 +54,6 @@ function Admin() {
     }
   };
 
-  // 🔥 FILTER LOGIC (Admin panel shows all donors)
   const filteredDonors = donors.filter((d) => {
     return (
       d.name?.toLowerCase().includes(search.toLowerCase()) &&
@@ -66,99 +63,136 @@ function Admin() {
   });
 
   return (
-    <div className="p-10">
-      <h1 className="text-3xl font-bold mb-6">Admin Panel</h1>
+    <div className="min-h-screen bg-[#FDFDFD] p-6 md:p-10 font-sans">
+      <div className="max-w-7xl mx-auto">
+        
+        {/* Header Area */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-10 gap-4">
+          <div>
+            <h1 className="text-3xl font-black text-slate-900 tracking-tight">
+              Admin <span className="text-red-600">Console</span>
+            </h1>
+            <p className="text-slate-600 text-sm font-bold mt-1 uppercase tracking-wide">Database Management</p>
+          </div>
+          <div className="bg-white border-2 border-slate-100 px-6 py-3 rounded-2xl">
+            <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">Total Records: </span>
+            <span className="text-xl font-black text-slate-900">{donors.length}</span>
+          </div>
+        </div>
 
-      {/* Filters */}
-      <div className="flex flex-col md:flex-row gap-4 mb-6">
-        <input
-          type="text"
-          placeholder="Search by name..."
-          className="border p-2 rounded-lg w-full"
-          onChange={(e) => setSearch(e.target.value)}
-        />
+        {/* 🔍 Filter Bar */}
+        <div className="bg-white border-2 border-slate-100 p-5 rounded-[2rem] mb-8 flex flex-col md:flex-row gap-4 shadow-sm">
+          <div className="flex-1">
+             <input
+                type="text"
+                placeholder="Search Donor Name..."
+                className="w-full bg-slate-50 border-2 border-transparent focus:border-red-100 p-4 rounded-2xl outline-none text-slate-800 font-bold placeholder:text-slate-400 transition-all"
+                onChange={(e) => setSearch(e.target.value)}
+              />
+          </div>
+          
+          <select
+            className="md:w-56 bg-slate-50 border-2 border-transparent p-4 rounded-2xl outline-none text-slate-800 font-bold cursor-pointer"
+            onChange={(e) => setBloodGroup(e.target.value)}
+          >
+            <option value="">All Blood Groups</option>
+            {["A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"].map(bg => (
+                <option key={bg} value={bg}>{bg}</option>
+            ))}
+          </select>
 
-        <select
-          className="border p-2 rounded-lg w-full"
-          onChange={(e) => setBloodGroup(e.target.value)}
-        >
-          <option value="">All Blood Groups</option>
-          <option value="A+">A+</option>
-          <option value="A-">A-</option>
-          <option value="B+">B+</option>
-          <option value="B-">B-</option>
-          <option value="O+">O+</option>
-          <option value="O-">O-</option>
-          <option value="AB+">AB+</option>
-          <option value="AB-">AB-</option>
-        </select>
+          <input
+            type="text"
+            placeholder="Filter City..."
+            className="md:w-56 bg-slate-50 border-2 border-transparent p-4 rounded-2xl outline-none text-slate-800 font-bold placeholder:text-slate-400"
+            onChange={(e) => setCity(e.target.value)}
+          />
+        </div>
 
-        <input
-          type="text"
-          placeholder="City"
-          className="border p-2 rounded-lg w-full"
-          onChange={(e) => setCity(e.target.value)}
-        />
-      </div>
+        {/* 📊 Data Table */}
+        <div className="bg-white border-2 border-slate-100 rounded-[2.5rem] overflow-hidden shadow-sm">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-50 border-b-2 border-slate-100">
+                  <th className="px-8 py-6 text-xs font-black text-slate-500 uppercase tracking-widest">Donor Details</th>
+                  <th className="px-8 py-6 text-xs font-black text-slate-500 uppercase tracking-widest text-center">Group</th>
+                  <th className="px-8 py-6 text-xs font-black text-slate-500 uppercase tracking-widest">Location</th>
+                  <th className="px-8 py-6 text-xs font-black text-slate-500 uppercase tracking-widest">Status</th>
+                  <th className="px-8 py-6 text-xs font-black text-slate-500 uppercase tracking-widest text-center">Management Actions</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y-2 divide-slate-50">
+                {filteredDonors.map((donor) => {
+                  const today = new Date();
+                  let statusText = donor.availability ? "Available" : "Not Available";
+                  let statusColor = donor.availability ? "bg-emerald-100 text-emerald-800" : "bg-red-100 text-red-800";
 
-      {/* Donor List */}
-      <div className="grid gap-6">
-        {filteredDonors.map((donor) => {
-          const today = new Date();
-          let statusText = donor.availability ? "Available" : "Not Available";
-          let statusColor = donor.availability ? "text-green-600" : "text-red-500";
+                  if (!donor.availability && donor.lastDonationDate) {
+                    const last = new Date(donor.lastDonationDate);
+                    const diffDays = (today - last) / (1000 * 60 * 60 * 24);
+                    if (diffDays <= 90) {
+                      statusText = `${Math.ceil(90 - diffDays)} Days Left`;
+                      statusColor = "bg-amber-100 text-amber-800";
+                    }
+                  }
 
-          // Optional: show "Eligible in X days" if donated recently
-          if (!donor.availability && donor.lastDonationDate) {
-            const last = new Date(donor.lastDonationDate);
-            const diffDays = (today - last) / (1000 * 60 * 60 * 24);
-            if (diffDays <= 90) {
-              statusText = `Eligible in ${Math.ceil(90 - diffDays)} days`;
-              statusColor = "text-yellow-600";
-            } else {
-              statusText = "Available";
-              statusColor = "text-green-600";
-            }
-          }
+                  return (
+                    <tr key={donor._id} className="hover:bg-slate-50 transition-colors">
+                      <td className="px-8 py-6">
+                        <div className="font-black text-slate-900 text-base">{donor.name}</div>
+                        <div className="text-sm text-slate-500 font-bold">{donor.phone || "No contact"}</div>
+                      </td>
+                      <td className="px-8 py-6 text-center">
+                        <span className="inline-block px-4 py-1.5 bg-red-600 text-white rounded-xl font-black text-sm shadow-sm">
+                          {donor.bloodGroup}
+                        </span>
+                      </td>
+                      <td className="px-8 py-6 text-sm text-slate-700 font-black uppercase tracking-tight">
+                        {donor.city}
+                      </td>
+                      <td className="px-8 py-6">
+                        <span className={`px-4 py-2 rounded-xl text-[10px] font-black uppercase tracking-widest ${statusColor}`}>
+                          {statusText}
+                        </span>
+                      </td>
+                      <td className="px-8 py-6">
+                        <div className="flex justify-center gap-3">
+                          {/* Toggle Button */}
+                          <button
+                            onClick={() => toggleAvailability(donor)}
+                            className="flex flex-col items-center gap-1 p-2 min-w-[65px] bg-blue-50 text-blue-700 rounded-2xl hover:bg-blue-100 transition-all active:scale-95 border border-blue-100"
+                          >
+                            <span className="text-lg">🔄</span>
+                            <span className="text-[9px] font-black uppercase">Toggle</span>
+                          </button>
 
-          return (
-            <div
-              key={donor._id}
-              className="p-5 bg-white shadow-md rounded-xl flex justify-between items-center"
-            >
-              <div>
-                <h2 className="font-bold text-lg">{donor.name}</h2>
-                <p>{donor.bloodGroup} | {donor.city}</p>
-                <p className={`text-sm font-semibold ${statusColor}`}>
-                  {statusText}
-                </p>
-              </div>
+                          {/* Donated Button */}
+                          <button
+                            onClick={() => markAsDonated(donor._id)}
+                            className="flex flex-col items-center gap-1 p-2 min-w-[65px] bg-emerald-50 text-emerald-700 rounded-2xl hover:bg-emerald-100 transition-all active:scale-95 border border-emerald-100"
+                          >
+                            <span className="text-lg">✅</span>
+                            <span className="text-[9px] font-black uppercase">Done</span>
+                          </button>
 
-              <div className="flex gap-3">
-                <button
-                  onClick={() => toggleAvailability(donor)}
-                  className="px-4 py-2 bg-blue-500 text-white rounded-lg"
-                >
-                  Toggle
-                </button>
-
-                <button
-                  onClick={() => deleteDonor(donor._id)}
-                  className="px-4 py-2 bg-red-500 text-white rounded-lg"
-                >
-                  Delete
-                </button>
-
-                <button
-                  onClick={() => markAsDonated(donor._id)}
-                  className="px-4 py-2 bg-green-600 text-white rounded-lg"
-                >
-                  Donated
-                </button>
-              </div>
-            </div>
-          );
-        })}
+                          {/* Delete Button */}
+                          <button
+                            onClick={() => deleteDonor(donor._id)}
+                            className="flex flex-col items-center gap-1 p-2 min-w-[65px] bg-red-50 text-red-600 rounded-2xl hover:bg-red-600 hover:text-white transition-all active:scale-95 border border-red-100"
+                          >
+                            <span className="text-lg">🗑️</span>
+                            <span className="text-[9px] font-black uppercase">Delete</span>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   );

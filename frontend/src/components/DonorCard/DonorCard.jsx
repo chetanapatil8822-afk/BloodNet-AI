@@ -42,7 +42,7 @@ function DonorCard({ donor }) {
 
      {donor.score !== undefined && (
   <p className="text-blue-600 font-bold">
-    AI Score: {donor.score}/100
+    Compatibility Score: {donor.score}/100
   </p>
 )}
 

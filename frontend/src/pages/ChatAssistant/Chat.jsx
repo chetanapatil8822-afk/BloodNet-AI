@@ -62,8 +62,25 @@ function Chat() {
             <div style={styles.welcomeIcon}>🏥</div>
             <h2 style={styles.welcomeTitle}>How can I help you today?</h2>
             <p style={styles.welcomeText}>
-              I can help you find donors, check blood compatibility, or locate the nearest blood bank.
+              I can help you find blood donors, check blood compatibility, connect with donors instantly, and answer any questions related to blood donation or your blood needs.
             </p>
+            <div style={styles.suggestionGrid}>
+  {[
+    "Need O+ blood in Mumbai",
+    "Who can donate to A+",
+    "Is blood donation safe?",
+    "How often can I donate blood?",
+    
+  ].map((hint, i) => (
+    <button
+      key={i}
+      onClick={() => setMessage(hint)}
+      style={styles.hintButton}
+    >
+      {hint}
+    </button>
+  ))}
+</div>
           </div>
         )}
 

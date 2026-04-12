@@ -1,125 +1,132 @@
 import { useState, useEffect } from "react";
 import axios from "axios";
 import DonorCard from "../../components/DonorCard/DonorCard";
-import { useLocation } from "react-router-dom"; // ✅ ADDED
-
+import { useLocation } from "react-router-dom";
 
 function FindDonor() {
   const [donors, setDonors] = useState([]);
-  const [search, setSearch] = useState("");
-  const [city, setCity] = useState("");
-  const [state, setState] = useState("");
-  const [district, setDistrict] = useState("");
+  const [loading, setLoading] = useState(true);
+  const location = useLocation();
+  const emergencyData = location.state || null;
 
-  const location = useLocation(); // ✅ ADDED
-  const emergencyData = location.state || null; // ✅ FIXED (SAFE HANDLING)
-
-  // ✅ Same states list
-  const statesOfIndia = [
-    "Andhra Pradesh","Arunachal Pradesh","Assam","Bihar","Chhattisgarh",
-    "Goa","Gujarat","Haryana","Himachal Pradesh","Jharkhand",
-    "Karnataka","Kerala","Madhya Pradesh","Maharashtra","Manipur",
-    "Meghalaya","Mizoram","Nagaland","Odisha","Punjab",
-    "Rajasthan","Sikkim","Tamil Nadu","Telangana","Tripura",
-    "Uttar Pradesh","Uttarakhand","West Bengal",
-    "Andaman and Nicobar Islands","Chandigarh","Dadra and Nagar Haveli and Daman and Diu",
-    "Delhi","Jammu and Kashmir","Ladakh","Lakshadweep","Puducherry"
-  ];
-
-  // 🔥 UPDATED: Fetch donors (Emergency + Normal mode)
+  // Fetch Donors Logic
   useEffect(() => {
-  const fetchDonors = async () => {
-    try {
-      let res;
-
-      if (emergencyData?.bloodGroup && emergencyData?.city) {
-        // 🧠 ML MODE
-        res = await axios.post(
-          "http://localhost:5000/match-donors",
-          emergencyData
-        );
-      } else {
-        // 🧠 NORMAL MODE
-        res = await axios.get("http://localhost:5000/donors");
+    const fetchDonors = async () => {
+      setLoading(true);
+      try {
+        let res;
+        if (emergencyData?.bloodGroup && emergencyData?.city) {
+          // AI/ML MATCHING MODE
+          res = await axios.post("http://localhost:5000/match-donors", emergencyData);
+        } else {
+          // NORMAL MODE
+          res = await axios.get("http://localhost:5000/donors");
+        }
+        setDonors(res.data);
+      } catch (err) {
+        console.error("Fetch Error:", err);
+      } finally {
+        setLoading(false);
       }
-
-      console.log("API RESPONSE:", res.data); // 🔥 DEBUG
-      setDonors(res.data);
-
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  fetchDonors();
-}, [emergencyData]);
-
-  // 🔥 Auto-fill emergency filters (UNCHANGED LOGIC)
-  useEffect(() => {
-    if (emergencyData) {
-      if (emergencyData.bloodGroup) {
-        setSearch(emergencyData.bloodGroup);
-      }
-      if (emergencyData.city) {
-        setCity(emergencyData.city);
-      }
-    }
+    };
+    fetchDonors();
   }, [emergencyData]);
 
-  // 🔥 FILTER LOGIC (UNCHANGED)
-  const filteredDonors = donors;
   return (
-    <div className="p-8">
-      <h1 className="text-3xl font-bold mb-6 text-center">
-        Find Blood Donors
-      </h1>
+    <div className="min-h-screen bg-[#FDFDFD] font-sans pb-20">
+      
+      {/* 1. Dynamic Header Section */}
+      <div className="bg-white border-b border-gray-100 pt-12 pb-8 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+            <div>
+              {emergencyData ? (
+                <div className="inline-flex items-center gap-2 bg-red-50 text-red-600 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-widest mb-3 animate-pulse">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-600"></span>
+                  </span>
+                  AI-Powered Priority Search
+                </div>
+              ) : (
+                <div className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-3">
+                  Donor Directory
+                </div>
+              )}
+              <h1 className="text-4xl font-black text-gray-900 tracking-tight">
+                Verified <span className="text-red-600">Donors</span>
+              </h1>
+              <p className="text-gray-500 mt-2 font-medium">
+                {emergencyData 
+                  ? `Showing best matches for ${emergencyData.bloodGroup} in ${emergencyData.city}`
+                  : "Connecting you with life-savers across the nation."}
+              </p>
+            </div>
 
-      {/* 🔍 Search Section */}
-      <div className="flex flex-col md:flex-row gap-4 mb-8 justify-center flex-wrap">
-
-        {/* Blood Group */}
-        <select
-          className="border p-3 rounded-lg w-full md:w-1/4"
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        >
-          <option value="">Select Blood Group</option>
-          <option value="A+">A+</option>
-          <option value="A-">A-</option>
-          <option value="B+">B+</option>
-          <option value="B-">B-</option>
-          <option value="AB+">AB+</option>
-          <option value="AB-">AB-</option>
-          <option value="O+">O+</option>
-          <option value="O-">O-</option>
-        </select>
-
-        {/* City */}
-        <input
-          type="text"
-          placeholder="Enter City"
-          className="border p-3 rounded-lg w-full md:w-1/4"
-          value={city}
-          onChange={(e) => setCity(e.target.value)}
-        />
+            {/* Quick Stats */}
+            <div className="flex gap-6 border-l-0 md:border-l border-gray-100 md:pl-8">
+              <div>
+                <p className="text-2xl font-bold text-gray-900">{donors.length}</p>
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-tighter">Results</p>
+              </div>
+              <div>
+                <p className="text-2xl font-bold text-emerald-500">
+                  {donors.filter(d => d.availability).length}
+                </p>
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-tighter">Available</p>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <p className="text-center mb-4 text-gray-600">
-        Showing {filteredDonors.length} donors
-      </p>
-
-      {/* Donor List */}
-      <div className="grid md:grid-cols-3 gap-6">
-        {filteredDonors.length > 0 ? (
-          filteredDonors.map((donor) => (
-            <DonorCard key={donor._id} donor={donor} />
-          ))
+      {/* 2. Main Content Area */}
+      <div className="max-w-6xl mx-auto px-6 mt-10">
+        
+        {loading ? (
+          /* Professional Loading State */
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="w-12 h-12 border-4 border-red-100 border-t-red-600 rounded-full animate-spin"></div>
+            <p className="mt-4 text-gray-400 font-medium">Analyzing donor database...</p>
+          </div>
         ) : (
-          <p className="text-center col-span-3 text-gray-500">
-            No donors found
-          </p>
+          <>
+            {donors.length > 0 ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                {donors.map((donor) => (
+                  <div key={donor._id} className="transform transition-all hover:-translate-y-1">
+                    <DonorCard donor={donor} />
+                  </div>
+                ))}
+              </div>
+            ) : (
+              /* Professional Empty State */
+              <div className="text-center py-24 bg-gray-50 rounded-[3rem] border-2 border-dashed border-gray-100">
+                <div className="text-5xl mb-4">🔍</div>
+                <h3 className="text-xl font-bold text-gray-800">No Matching Donors Found</h3>
+                <p className="text-gray-500 mt-2 max-w-sm mx-auto px-6">
+                  Try broadening your search or contact the nearest blood bank for immediate assistance.
+                </p>
+                <button 
+                  onClick={() => window.location.reload()}
+                  className="mt-6 text-red-600 font-bold hover:underline"
+                >
+                  Refresh Search
+                </button>
+              </div>
+            )}
+          </>
         )}
       </div>
+
+      {/* 3. Global Footer (Clean) */}
+      <footer className="mt-20 text-center">
+        <div className="inline-block p-1 bg-gray-50 rounded-full px-4 border border-gray-100">
+          <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest">
+            Showing real-time verified results from BloodNet Database
+          </p>
+        </div>
+      </footer>
     </div>
   );
 }

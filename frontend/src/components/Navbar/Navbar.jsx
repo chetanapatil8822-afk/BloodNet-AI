@@ -13,23 +13,26 @@ function Navbar() {
   };
 
   return (
-    <nav className="bg-white shadow-md px-10 py-4 flex items-center">
+    <nav className="bg-white border-b-2 border-slate-50 px-10 py-5 flex items-center font-sans sticky top-0 z-50">
 
-      {/* LOGO */}
-      <h1 className="font-bold text-2xl text-primary cursor-pointer" onClick={() => navigate("/")}>
-        🩸 BloodNet AI
+      {/* LOGO - Bold & Professional */}
+      <h1 
+        className="font-black text-2xl text-slate-900 cursor-pointer tracking-tighter" 
+        onClick={() => navigate("/")}
+      >
+        <span className="text-red-600">🩸</span> BloodNet<span className="text-red-600">AI</span>
       </h1>
 
-      {/* MENU */}
-      <div className="flex space-x-8 ml-auto mr-6 text-gray-700 font-medium">
+      {/* MENU - Updated with Slate Colors */}
+      <div className="flex space-x-8 ml-auto mr-8 text-slate-600 font-bold text-sm uppercase tracking-wide">
 
         <NavLink
           to="/"
           className={({ isActive }) =>
-            `pb-1 transition ${
+            `transition-all duration-300 ${
               isActive
-                ? "text-primary border-b-2 border-primary"
-                : "hover:text-primary"
+                ? "text-red-600 border-b-2 border-red-600 pb-1"
+                : "hover:text-red-600"
             }`
           }
         >
@@ -39,10 +42,10 @@ function Navbar() {
         <NavLink
           to="/find-donor"
           className={({ isActive }) =>
-            `pb-1 transition ${
+            `transition-all duration-300 ${
               isActive
-                ? "text-primary border-b-2 border-primary"
-                : "hover:text-primary"
+                ? "text-red-600 border-b-2 border-red-600 pb-1"
+                : "hover:text-red-600"
             }`
           }
         >
@@ -52,23 +55,23 @@ function Navbar() {
         <NavLink
           to="/register"
           className={({ isActive }) =>
-            `pb-1 transition ${
+            `transition-all duration-300 ${
               isActive
-                ? "text-primary border-b-2 border-primary"
-                : "hover:text-primary"
+                ? "text-red-600 border-b-2 border-red-600 pb-1"
+                : "hover:text-red-600"
             }`
           }
         >
-          Register Donor
+          Register
         </NavLink>
 
         <NavLink
           to="/emergency"
           className={({ isActive }) =>
-            `pb-1 transition ${
+            `transition-all duration-300 ${
               isActive
-                ? "text-primary border-b-2 border-primary"
-                : "hover:text-primary"
+                ? "text-red-600 border-b-2 border-red-600 pb-1"
+                : "hover:text-red-600"
             }`
           }
         >
@@ -78,10 +81,10 @@ function Navbar() {
         <NavLink
           to="/ai-chat"
           className={({ isActive }) =>
-            `pb-1 transition ${
+            `transition-all duration-300 ${
               isActive
-                ? "text-primary border-b-2 border-primary"
-                : "hover:text-primary"
+                ? "text-red-600 border-b-2 border-red-600 pb-1"
+                : "hover:text-red-600"
             }`
           }
         >
@@ -93,14 +96,14 @@ function Navbar() {
           <NavLink
             to="/donor-dashboard"
             className={({ isActive }) =>
-              `pb-1 transition ${
+              `transition-all duration-300 ${
                 isActive
-                  ? "text-primary border-b-2 border-primary"
-                  : "hover:text-primary"
+                  ? "text-red-600 border-b-2 border-red-600 pb-1"
+                  : "hover:text-red-600"
               }`
             }
           >
-            Donor Dashboard
+            Dashboard
           </NavLink>
         )}
 
@@ -109,14 +112,14 @@ function Navbar() {
           <NavLink
             to="/admin"
             className={({ isActive }) =>
-              `pb-1 transition ${
+              `transition-all duration-300 ${
                 isActive
-                  ? "text-primary border-b-2 border-primary"
-                  : "hover:text-primary"
+                  ? "text-red-600 border-b-2 border-red-600 pb-1"
+                  : "hover:text-red-600"
               }`
             }
           >
-            Admin Panel
+            Admin
           </NavLink>
         )}
 
@@ -129,13 +132,13 @@ function Navbar() {
         {!role && (
           <>
             <Link to="/login">
-              <button className="bg-primary text-white px-5 py-2 rounded-lg hover:bg-primaryDark transition">
+              <button className="text-slate-900 font-bold px-5 py-2 hover:text-red-600 transition">
                 Login
               </button>
             </Link>
 
             <Link to="/signup">
-              <button className="border border-primary text-primary px-5 py-2 rounded-lg hover:bg-primary hover:text-white transition">
+              <button className="bg-red-600 text-white px-6 py-2.5 rounded-xl font-bold hover:bg-red-700 shadow-lg shadow-red-100 transition-all active:scale-95">
                 Signup
               </button>
             </Link>
@@ -144,18 +147,20 @@ function Navbar() {
 
         {/* ✅ Logged In */}
         {role && (
-          <>
-            <span className="text-gray-600 font-medium">
-              👋 {name}
+          <div className="flex items-center gap-4 bg-slate-50 px-4 py-2 rounded-2xl border border-slate-100">
+            <span className="text-slate-900 font-black text-sm">
+              <span className="text-slate-400 font-bold mr-1 italic">HI,</span> {name?.toUpperCase()}
             </span>
+
+            <div className="h-4 w-[2px] bg-slate-200"></div>
 
             <button
               onClick={handleLogout}
-              className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition"
+              className="text-red-600 font-black text-xs uppercase tracking-widest hover:text-red-800 transition"
             >
               Logout
             </button>
-          </>
+          </div>
         )}
 
       </div>
