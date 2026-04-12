@@ -368,9 +368,23 @@ Rules:
       if (content) aiReply += content;
     }
 
+    const whatsappMessage = `
+🚨 BLOOD EMERGENCY ALERT 🚨
+
+🩸 Blood Group: ${bloodGroup || "Not specified"}
+📍 City: ${city || "Not specified"}
+
+🔍 Donors Found: ${donors.length}
+
+👉 Please contact urgently if you can donate.
+
+- BloodNet AI
+`;
+
     res.json({
       reply: aiReply,
-      donors: donors   // 👈 IMPORTANT
+      donors: donors,   // 👈 IMPORTANT
+      whatsappMessage: whatsappMessage
     });
 
   } catch (error) {
