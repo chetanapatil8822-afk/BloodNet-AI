@@ -565,9 +565,7 @@ Rules:
 
 // ================= DATABASE =================
 
-mongoose.connect(
-  "mongodb+srv://chetana29:dwIjXakSetqw4vgh@bloodnetcluster.eljadmk.mongodb.net/bloodnet-cluster"
-);
+mongoose.connect(process.env.MONGODB_URI);
 
 mongoose.connection.on("connected", () => {
   console.log("MongoDB connected");
