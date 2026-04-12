@@ -5,7 +5,7 @@ import cors from "cors";
 
 import Donor from "./models/Donor.js";
 import User from "./models/User.js";
-import chatRoutes from "./routes/chat.js";
+//import chatRoutes from "./routes/chat.js";
 
 import dotenv from "dotenv";
 dotenv.config();
@@ -24,6 +24,41 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// 🧠 Blood group extractor function
+function extractBloodGroup(text) {
+  const t = text.toUpperCase();
+
+  const map = {
+    "A+": ["A+", "A POS", "A PLUS", "A POSITIVE"],
+    "A-": ["A-", "A NEG", "A NEGATIVE"],
+    "B+": ["B+", "B POS", "B PLUS", "B POSITIVE"],
+    "B-": ["B-", "B NEG", "B NEGATIVE"],
+    "O+": ["O+", "O POS", "O PLUS", "O POSITIVE"],
+    "O-": ["O-", "O NEG", "O NEGATIVE"],
+    "AB+": ["AB+", "AB POS", "AB PLUS", "AB POSITIVE"],
+    "AB-": ["AB-", "AB NEG", "AB NEGATIVE"]
+  };
+
+  for (let key in map) {
+    if (map[key].some(v => t.includes(v))) {
+      return key;
+    }
+  }
+
+  return null;
+}
+
+function extractCity(text) {
+  const t = text.toLowerCase();
+
+  if (t.includes("mumbai")) return "Mumbai";
+  if (t.includes("thane")) return "Thane";
+  if (t.includes("palghar")) return "Palghar";
+  if (t.includes("vada")) return "Vada";
+
+  return null;
+}
+
 // test route
 app.get("/", (req, res) => {
   res.send("API running...");
@@ -33,7 +68,7 @@ app.get("/check", (req, res) => {
   res.send("Login route added");
 });
 
-app.use("/api", chatRoutes);
+//app.use("/api", chatRoutes);
 // ================= DONOR ROUTES =================
 
 // Get donors
@@ -264,7 +299,38 @@ app.post("/chat", async (req, res) => {
   try {
     const { message } = req.body;
 
-    const stream = await openrouter.chat.send({
+    console.log("CHAT API HIT");
+    console.log("MESSAGE:", message); // ✅ correct place
+
+    const bloodGroup = extractBloodGroup(message);
+const city = extractCity(message);
+
+console.log("EXTRACTED BLOODGROUP:", bloodGroup);
+console.log("EXTRACTED CITY:", city);
+
+let query = {};
+
+if (bloodGroup) {
+  query.bloodGroup = bloodGroup;
+}
+
+if (city) {
+  query.city = new RegExp(`^${city}$`, "i");
+}
+
+console.log("FINAL QUERY:", query);
+
+let donors = await Donor.find(query).limit(5);
+
+
+console.log("MESSAGE:", message);
+console.log("EXTRACTED BLOODGROUP:", bloodGroup);
+console.log("EXTRACTED CITY:", city);
+console.log("DONORS FROM DB:", donors);
+    // 🤖 AI response
+    const donorCount = donors.length;
+
+const stream = await openrouter.chat.send({
   chatRequest: {
     model: "meta-llama/llama-3.3-70b-instruct",
     messages: [
@@ -273,17 +339,17 @@ app.post("/chat", async (req, res) => {
         content: `
 You are an AI assistant for a blood donation app.
 
-Your job:
-- Help users find blood
-- Answer donation questions
-- Detect emergency requests
-- Suggest compatible blood groups
-- Generate short emergency messages
+IMPORTANT:
+- Only use the data provided
+- Do NOT make up numbers
 
-Keep answers:
-- Short
-- Clear
-- Helpful
+Donor count: ${donorCount}
+Donor names: ${donors.map(d => d.name).join(", ")}
+
+Rules:
+- If donors = 0 → say "No donors found"
+- If donors > 0 → mention exact number
+- Keep answer short and urgent
 `
       },
       {
@@ -295,17 +361,20 @@ Keep answers:
   }
 });
 
-    let fullResponse = "";
+    let aiReply = "";
 
     for await (const chunk of stream) {
       const content = chunk.choices[0]?.delta?.content;
-      if (content) fullResponse += content;
+      if (content) aiReply += content;
     }
 
-    res.json({ reply: fullResponse });
+    res.json({
+      reply: aiReply,
+      donors: donors   // 👈 IMPORTANT
+    });
 
   } catch (error) {
-    console.error("CHAT ERROR:", error);
+    console.error(error);
     res.status(500).json({ error: error.message });
   }
 });
