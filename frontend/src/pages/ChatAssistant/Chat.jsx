@@ -6,7 +6,6 @@ function Chat() {
   const [chat, setChat] = useState([]);
   const chatEndRef = useRef(null);
 
-  // Auto scroll to bottom whenever chat updates
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [chat]);
@@ -16,7 +15,7 @@ function Chat() {
 
     const userMsg = { type: "user", text: message };
     setChat((prev) => [...prev, userMsg]);
-    setMessage(""); // Clear input immediately for better UX
+    setMessage("");
 
     try {
       const res = await axios.post("http://localhost:5000/chat", {
@@ -25,21 +24,26 @@ function Chat() {
 
       const aiMsg = {
         type: "ai",
-        text: res.data.aiReply,
-        donors: res.data.donors
+        text: res.data.reply,   // ✅ backend field
+        donors: res.data.donors || [],
+        whatsapp: res.data.whatsappMessage || "" // ✅ NEW SAFE FIELD
       };
 
       setChat((prev) => [...prev, aiMsg]);
     } catch (err) {
       console.error("Chat Error:", err);
-      const errorMsg = { type: "ai", text: "I'm having trouble connecting. Please try again." };
+
+      const errorMsg = {
+        type: "ai",
+        text: "I'm having trouble connecting. Please try again."
+      };
+
       setChat((prev) => [...prev, errorMsg]);
     }
   };
 
   return (
     <div style={styles.container}>
-      {/* Professional Header */}
       <header style={styles.header}>
         <div style={styles.headerContent}>
           <div style={styles.logoBadge}>🩸</div>
@@ -52,7 +56,6 @@ function Chat() {
         </div>
       </header>
 
-      {/* Chat Area - Scrollable */}
       <div style={styles.chatBox}>
         {chat.length === 0 && (
           <div style={styles.welcomeContainer}>
@@ -61,13 +64,6 @@ function Chat() {
             <p style={styles.welcomeText}>
               I can help you find donors, check blood compatibility, or locate the nearest blood bank.
             </p>
-            <div style={styles.suggestionGrid}>
-              {["Need O+ blood in Mumbai", "Find B- donors nearby"].map((hint, i) => (
-                <button key={i} onClick={() => setMessage(hint)} style={styles.hintButton}>
-                  {hint}
-                </button>
-              ))}
-            </div>
           </div>
         )}
 
@@ -83,60 +79,70 @@ function Chat() {
               style={{
                 ...styles.message,
                 backgroundColor: msg.type === "user" ? "#D32F2F" : "#FFFFFF",
-                color: msg.type === "user" ? "#FFFFFF" : "#2C3E50",
-                borderRadius: msg.type === "user" ? "18px 18px 2px 18px" : "18px 18px 18px 2px",
-                boxShadow: msg.type === "user" ? "0 4px 12px rgba(211,47,47,0.2)" : "0 4px 12px rgba(0,0,0,0.05)"
+                color: msg.type === "user" ? "#FFFFFF" : "#2C3E50"
               }}
             >
               <div style={styles.messageText}>{msg.text}</div>
 
-              {/* Enhanced Donor Cards */}
-              {msg.donors && msg.donors.length > 0 && (
+              {/* DONORS */}
+              {msg.donors?.length > 0 && (
                 <div style={styles.donorContainer}>
-                  <div style={styles.donorHeader}>Found {msg.donors.length} Verified Donors</div>
+                  <div style={styles.donorHeader}>
+                    Found {msg.donors.length} Verified Donors
+                  </div>
+
                   {msg.donors.map((d, i) => (
                     <div key={i} style={styles.donorCard}>
                       <div style={styles.donorAvatar}>{d.bloodGroup}</div>
                       <div style={styles.donorInfo}>
                         <div style={styles.donorName}>{d.name}</div>
-                        <div style={styles.donorLoc}>{d.city} • Verified</div>
+                        <div style={styles.donorLoc}>{d.city}</div>
                       </div>
-                      <button style={styles.contactBtn}>Contact</button>
+                      <button
+  style={styles.contactBtn}
+  onClick={() => {
+    const phone = d.phone; // donor phone
+    const text = encodeURIComponent(msg.whatsapp || "");
+
+    window.open(`https://wa.me/91${phone}?text=${text}`, "_blank");
+  }}
+>
+  WhatsApp
+</button>
                     </div>
                   ))}
                 </div>
               )}
+
+              {/* 📱 WHATSAPP MESSAGE */}
+              
             </div>
           </div>
         ))}
+
         <div ref={chatEndRef} />
       </div>
 
-      {/* Modern Floating Input Section */}
       <div style={styles.inputWrapper}>
         <div style={styles.inputContainer}>
           <input
             style={styles.input}
-            type="text"
-            placeholder="Type your emergency request..."
             value={message}
             onChange={(e) => setMessage(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && sendMessage()}
+            placeholder="Type your emergency request..."
           />
           <button style={styles.sendButton} onClick={sendMessage}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="22" y1="2" x2="11" y2="13"></line>
-              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-            </svg>
+            ➤
           </button>
         </div>
-        <p style={styles.footerNote}>BloodNet AI provides real-time donor matching</p>
       </div>
     </div>
   );
 }
 
 export default Chat;
+
 
 const styles = {
   container: {
@@ -349,5 +355,26 @@ const styles = {
     fontSize: "11px",
     color: "#94A3B8",
     marginTop: "10px"
-  }
+  },
+
+  whatsappBox: {
+  marginTop: "10px",
+  padding: "10px",
+  background: "#E8F5E9",
+  border: "1px solid #A5D6A7",
+  borderRadius: "10px"
+},
+
+whatsappTitle: {
+  fontSize: "12px",
+  fontWeight: "700",
+  color: "#2E7D32",
+  marginBottom: "5px"
+},
+
+whatsappText: {
+  fontSize: "13px",
+  color: "#1B5E20",
+  whiteSpace: "pre-line"
+}
 };
