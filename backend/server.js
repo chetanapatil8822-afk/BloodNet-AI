@@ -182,7 +182,10 @@ app.get("/check", (req, res) => {
 app.get("/donors", async (req, res) => {
   try {
     const donors = await Donor.find();
+
+    // ✅ NO FILTER HERE
     res.json(donors);
+
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -321,7 +324,18 @@ app.post("/match-donors", async (req, res) => {
     const { bloodGroup, city, district } = req.body;
 
     // STEP 1: Get all donors
-    const donors = await Donor.find();
+    const allDonors = await Donor.find();
+
+const today = new Date();
+
+const donors = allDonors.filter(d => {
+  if (!d.lastDonationDate) return d.availability;
+
+  const last = new Date(d.lastDonationDate);
+  const diffDays = (today - last) / (1000 * 60 * 60 * 24);
+
+  return diffDays >= 90 && d.availability;
+});
 
     // STEP 2: Filter by blood group
     const filteredByBlood = donors.filter(
@@ -427,12 +441,12 @@ app.post("/chat", async (req, res) => {
 
     const predefined = getPredefinedAnswer(message);
 
-if (predefined) {
-  return res.json({
-    reply: predefined,
-    donors: []
-  });
-}
+    if (predefined) {
+      return res.json({
+        reply: predefined,
+        donors: []
+      });
+    }
 
     console.log("CHAT API HIT");
     console.log("MESSAGE:", message);
@@ -443,7 +457,7 @@ if (predefined) {
     console.log("EXTRACTED BLOODGROUP:", bloodGroup);
     console.log("EXTRACTED CITY:", city);
 
-    // 🟢 NEW: emergency check
+    // 🟢 emergency check
     const isEmergency = isEmergencyRequest(message);
     console.log("IS EMERGENCY:", isEmergency);
 
@@ -461,12 +475,23 @@ if (predefined) {
 
     let donors = [];
 
-    // 🟢 IMPORTANT CHANGE: only fetch donors if emergency
+    // 🟢 ONLY CHANGE: eligibility filter added
     if (isEmergency && (bloodGroup || city)) {
-      donors = await Donor.find(query).limit(5);
+      const allDonors = await Donor.find(query).limit(10);
+
+      const today = new Date();
+
+      donors = allDonors.filter(d => {
+        if (!d.lastDonationDate) return d.availability;
+
+        const last = new Date(d.lastDonationDate);
+        const diffDays = (today - last) / (1000 * 60 * 60 * 24);
+
+        return diffDays >= 90 && d.availability;
+      }).slice(0, 5); // keep original limit behavior
     }
 
-    console.log("DONORS FROM DB:", donors);
+    console.log("DONORS AFTER FILTER:", donors);
 
     // 🤖 AI response
     const donorCount = donors.length;
@@ -527,7 +552,7 @@ Rules:
 
     res.json({
       reply: aiReply,
-      donors: donors,   // ✅ unchanged response structure
+      donors: donors,   // ✅ unchanged
       whatsappMessage: whatsappMessage
     });
 
