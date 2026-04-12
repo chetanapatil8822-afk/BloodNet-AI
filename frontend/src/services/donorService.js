@@ -1,6 +1,6 @@
 export const addDonor = async (donorData) => {
   try {
-    const res = await fetch("http://localhost:5000/donors", {
+    const res = await fetch("https://bloodnet-ai.onrender.com/donors", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
